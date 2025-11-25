@@ -81,7 +81,7 @@ func worker() (err error) {
 
 		var filelinks []database.FileLink
 		if filelinks, err = database.ReadFileLink(&filename); err != nil {
-			showerr(fmt.Sprintf("failed to get FileLink of file %s/%s : %v", f.Bucket, f.Filename, err), false)
+			utils.Showerr(fmt.Sprintf("failed to get FileLink of file %s/%s : %v", f.Bucket, f.Filename, err), false)
 			continue
 		}
 

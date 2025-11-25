@@ -14,15 +14,15 @@ func find_new_create(a *[]schema.FileMINIO, b *[]database.FileLink) *[]schema.Fi
 		m[f.Filename] = true
 	}
 
-	result := make([]schema.FileMINIO, 0)
+	result := new([]schema.FileMINIO)
 	for _, f := range *a {
 		tmp := fmt.Sprintf("%s_%s", f.Bucket, strings.ReplaceAll(f.Filename, "/", "_"))
 		if !m[tmp] {
-			result = append(result, f)
+			*result = append(*result, f)
 		}
 	}
 
-	return &result
+	return result
 }
 
 // find items in db bit not in MinIO (old files)
@@ -33,14 +33,14 @@ func find_old_delete(a *[]database.FileLink, b *[]schema.FileMINIO) *[]database.
 		m[tmp] = true
 	}
 
-	result := make([]database.FileLink, 0)
+	result := new([]database.FileLink)
 	for _, f := range *a {
 		if !m[f.Filename] {
-			result = append(result, f)
+			*result = append(*result, f)
 		}
 	}
 
-	return &result
+	return result
 }
 
 // find items in MinIO and db (need to check update)
@@ -50,13 +50,13 @@ func find_same(a *[]schema.FileMINIO, b *[]database.FileLink) *[]schema.FileMINI
 		m[f.Filename] = true
 	}
 
-	result := make([]schema.FileMINIO, 0)
+	result := new([]schema.FileMINIO)
 	for _, f := range *a {
 		tmp := fmt.Sprintf("%s_%s", f.Bucket, strings.ReplaceAll(f.Filename, "/", "_"))
 		if m[tmp] {
-			result = append(result, f)
+			*result = append(*result, f)
 		}
 	}
 
-	return &result
+	return result
 }

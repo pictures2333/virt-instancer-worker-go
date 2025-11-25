@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,8 @@ func Init() {
 	once.Do(func() {
 		var err error
 
-		database := sqlite.Open(config.Database)
+		// database := sqlite.Open(config.Database)
+		database := postgres.Open(config.Database)
 
 		// connect to database
 		db, err = gorm.Open(database, &gorm.Config{})
@@ -36,7 +37,7 @@ func Init() {
 		}
 
 		// for sqlite - enable foreign keys
-		db.Exec("PRAGMA foreign_keys = ON")
+		// db.Exec("PRAGMA foreign_keys = ON")
 
 		// success
 		log.Println("Database connected")

@@ -40,7 +40,7 @@ type FileLink struct {
 	Filename string `gorm:"not null;unique"`
 
 	// OnDelete:SET NULL -> set fileobj to orphan (unlink)
-	FileObj FileObj `gorm:"foreignKey:Filename;references:Filename;constraint:OnUpdate:CASCADE;OnDelete:SET NULL"`
+	FileObj FileObj `gorm:"foreignKey:Filename;references:Filename;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 }
 
 type FileObj struct {

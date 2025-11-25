@@ -147,7 +147,7 @@ func DeleteFileObjOrphan(filenameReal string) (err error) {
 
 	err = db.Transaction(func(tx *gorm.DB) error {
 		// (2) check exists and it's orphan
-		fileobjs, err := gorm.G[FileObj](tx).Where("filename IS NULL AND filename_real == ?", filenameReal).Find(ctx)
+		fileobjs, err := gorm.G[FileObj](tx).Where("filename IS NULL AND filename_real = ?", filenameReal).Find(ctx)
 		if err != nil {
 			return err
 		}
@@ -162,7 +162,7 @@ func DeleteFileObjOrphan(filenameReal string) (err error) {
 		}
 
 		// delete
-		if _, err := gorm.G[FileObj](tx).Where("filename IS NULL AND filename_real == ?", filenameReal).Delete(ctx); err != nil {
+		if _, err := gorm.G[FileObj](tx).Where("filename IS NULL AND filename_real = ?", filenameReal).Delete(ctx); err != nil {
 			return err
 		}
 

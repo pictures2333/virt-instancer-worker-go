@@ -5,22 +5,13 @@ import (
 	"Instancer-worker-go/database"
 	"Instancer-worker-go/minio"
 	"Instancer-worker-go/schema"
+	"Instancer-worker-go/utils"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"sync"
 )
-
-func showerr(msg string, rollback bool) {
-	tag := "Error : "
-
-	if rollback {
-		tag += "Rollback : "
-	}
-
-	log.Printf(tag + msg)
-}
 
 func do_create(wg *sync.WaitGroup, f *schema.FileMINIO) {
 	defer wg.Done()
@@ -41,33 +32,33 @@ func do_create(wg *sync.WaitGroup, f *schema.FileMINIO) {
 		filename,
 		filenameReal, f.LastModified, "CREATING",
 	); err != nil {
-		showerr(fmt.Sprintf("failed to create FileLink and FileObj for file %s : %v", filename, err), false)
+		utils.Showerr(fmt.Sprintf("failed to create FileLink and FileObj for file %s : %v", filename, err), false)
 		return
 	}
 	defer func(err *error) {
 		if *err != nil {
 			if err := database.DeleteFileLink(filename); err != nil {
-				showerr(fmt.Sprintf("failed to delete FileLink %s : %v", filename, err), true)
+				utils.Showerr(fmt.Sprintf("failed to delete FileLink %s : %v", filename, err), true)
 			}
 		}
 	}(&err)
 
 	// download file
 	if err = minio.Download(f.Bucket, f.Filename, filenameRealFullPath); err != nil {
-		showerr(fmt.Sprintf("failed to download file %s/%s from MinIO : %v", f.Bucket, f.Filename, err), false)
+		utils.Showerr(fmt.Sprintf("failed to download file %s/%s from MinIO : %v", f.Bucket, f.Filename, err), false)
 		return
 	}
 	defer func(err *error) {
 		if *err != nil {
 			if err := os.Remove(filenameRealFullPath); err != nil {
-				showerr(fmt.Sprintf("failed to delete file %s : %v", filenameRealFullPath, err), true)
+				utils.Showerr(fmt.Sprintf("failed to delete file %s : %v", filenameRealFullPath, err), true)
 			}
 		}
 	}(&err)
 
 	// update FileObj status
 	if err = database.UpdateFileObjStatus(filenameReal, "READY"); err != nil {
-		showerr(fmt.Sprintf("failed to update status of FileObj %s : %v", filenameReal, err), false)
+		utils.Showerr(fmt.Sprintf("failed to update status of FileObj %s : %v", filenameReal, err), false)
 		return
 	}
 }
@@ -82,7 +73,7 @@ func do_delete(wg *sync.WaitGroup, f *database.FileLink) {
 
 	// delete FileLink from DB
 	if err = database.DeleteFileLink(filename); err != nil {
-		showerr(fmt.Sprintf("failed to delete FileLink %s : %v", filename, err), false)
+		utils.Showerr(fmt.Sprintf("failed to delete FileLink %s : %v", filename, err), false)
 		return
 	}
 }
@@ -103,13 +94,13 @@ func do_update(wg *sync.WaitGroup, f *schema.FileMINIO) {
 
 	// download file
 	if err = minio.Download(f.Bucket, f.Filename, filenameRealFullPath); err != nil {
-		showerr(fmt.Sprintf("failed to download file %s/%s from MinIO : %v", f.Bucket, f.Filename, err), false)
+		utils.Showerr(fmt.Sprintf("failed to download file %s/%s from MinIO : %v", f.Bucket, f.Filename, err), false)
 		return
 	}
 	defer func(err *error) {
 		if *err != nil {
 			if err := os.Remove(filenameRealFullPath); err != nil {
-				showerr(fmt.Sprintf("failed to delete file %s : %v", filenameRealFullPath, err), true)
+				utils.Showerr(fmt.Sprintf("failed to delete file %s : %v", filenameRealFullPath, err), true)
 			}
 		}
 	}(&err)
@@ -119,7 +110,7 @@ func do_update(wg *sync.WaitGroup, f *schema.FileMINIO) {
 		filename,
 		filenameReal, f.LastModified, "READY",
 	); err != nil {
-		showerr(fmt.Sprintf("failed to create FileObj and update FileLink for file %s : %v", filename, err), false)
+		utils.Showerr(fmt.Sprintf("failed to create FileObj and update FileLink for file %s : %v", filename, err), false)
 		return
 	}
 }
@@ -136,7 +127,7 @@ func do_delete_orphan_fileobj() {
 	var orphans []database.FileObj
 	orphans, err = database.ReadFileObjOrphan()
 	if err != nil {
-		showerr(fmt.Sprintf("failed to get orphan FileObjs : %v", err), false)
+		utils.Showerr(fmt.Sprintf("failed to get orphan FileObjs : %v", err), false)
 		return
 	}
 
@@ -148,13 +139,13 @@ func do_delete_orphan_fileobj() {
 
 			// delete FileObj from DB
 			if err = database.DeleteFileObjOrphan(f.FilenameReal); err != nil {
-				showerr(fmt.Sprintf("failed to delete FileObj %s : %v", f.FilenameReal, err), false)
+				utils.Showerr(fmt.Sprintf("failed to delete FileObj %s : %v", f.FilenameReal, err), false)
 				continue
 			}
 
 			// delete file
 			if err = os.Remove(filenameRealFullPath); err != nil {
-				showerr(fmt.Sprintf("failed to remove file %s : %v", filenameRealFullPath, err), false)
+				utils.Showerr(fmt.Sprintf("failed to remove file %s : %v", filenameRealFullPath, err), false)
 				continue
 			}
 

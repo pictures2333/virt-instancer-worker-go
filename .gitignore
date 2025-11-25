@@ -1,5 +1,7 @@
 build/
 tmp/
+challenge/
 
 database/database.db
 .env
+note.md
