@@ -3,6 +3,7 @@ package vmhelper
 import (
 	"Instancer-worker-go/config"
 	"Instancer-worker-go/database"
+	"Instancer-worker-go/libvirtHelper"
 	"Instancer-worker-go/schema"
 	"Instancer-worker-go/utils"
 	"fmt"
@@ -32,7 +33,7 @@ func Init() {
 
 		// generate allSubnets
 		if err = initializeAllSubnets(config.BaseNetwork, config.SubnetPrefix); err != nil {
-			log.Fatalf("Failed to generate all subnets : %v", err)
+			log.Fatalf("Failed to generate all subnets for vmhelper : %v", err)
 		}
 	})
 }
@@ -46,7 +47,7 @@ func Create(data *schema.InstanceData) (err error) {
 	}
 	defer vmunlock(data.VMUUID)
 
-	// check exists
+	// check exists (instance)
 	var instances []database.Instance
 	if instances, err = database.ReadInstance(&data.VMUUID); err != nil {
 		return fmt.Errorf("failed to read database : %v", err)
@@ -66,7 +67,7 @@ func Create(data *schema.InstanceData) (err error) {
 	defer subnetStop()
 
 	networkUUID := uuid.New().String()
-	networkBridgeName := fmt.Sprintf("vnet%s", networkUUID[:8])
+	networkBridgeName := fmt.Sprintf("br%s", networkUUID[:8])
 	networkIP := subnet.IP.String()
 	networkNetmask := fmt.Sprintf("%d.%d.%d.%d",
 		subnet.Mask[0],
@@ -173,31 +174,28 @@ func Create(data *schema.InstanceData) (err error) {
 	}
 
 	// start network and vm
-	if err = StartNetwork(netxml); err != nil {
+	// set up firewall in callback function
+	if err = libvirtHelper.StartNetwork(netxml); err != nil {
 		return err
 	}
 	defer func(err *error) {
 		if *err != nil {
-			if err := DeleteNetwork(data.Network.UUID); err != nil {
+			if err := libvirtHelper.DeleteNetwork(data.Network.UUID); err != nil {
 				utils.Showerr(fmt.Sprintf("failed to delete network %s : %v", data.Network.UUID, err), true)
 			}
 		}
 	}(&err)
 
-	if err = StartVM(vmxml); err != nil {
+	if err = libvirtHelper.StartVM(vmxml); err != nil {
 		return err
 	}
 	defer func(err *error) {
 		if *err != nil {
-			if err := DeleteVM(data.VMUUID); err != nil {
+			if err := libvirtHelper.DeleteVM(data.VMUUID); err != nil {
 				utils.Showerr(fmt.Sprintf("failed to delete VM %s : %v", data.VMUUID, err), true)
 			}
 		}
 	}(&err)
-
-	// nftables
-	// - isolation
-	// - vpn
 
 	return nil
 }
@@ -220,12 +218,12 @@ func Delete(VMUUID string) (err error) {
 	instance := instances[0]
 
 	// delete vm
-	if err = DeleteVM(VMUUID); err != nil {
+	if err = libvirtHelper.DeleteVM(VMUUID); err != nil {
 		return fmt.Errorf("failed to delete VM %s : %v", VMUUID, err)
 	}
 
 	// delete network
-	if err = DeleteNetwork(instance.NetworkUUID); err != nil {
+	if err = libvirtHelper.DeleteNetwork(instance.NetworkUUID); err != nil {
 		return fmt.Errorf("failed to delete network %s : %v", instance.NetworkUUID, err)
 	}
 

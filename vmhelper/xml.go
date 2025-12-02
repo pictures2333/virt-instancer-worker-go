@@ -32,6 +32,10 @@ func GetFileInfo(data *schema.InstanceData, key string) (result FileInfo) {
 	return result
 }
 
+func GetWorkDir(data *schema.InstanceData) string {
+	return fmt.Sprintf("%s/vmfiles/%s", config.FileDir, data.VMUUID)
+}
+
 // render XML for Libvirt
 func XMLTemplate(data *schema.InstanceData, templateType string) (result string, err error) {
 	var (
@@ -53,6 +57,7 @@ func XMLTemplate(data *schema.InstanceData, templateType string) (result string,
 	// funcmap
 	funcMap := template.FuncMap{
 		"GetFileInfo": GetFileInfo,
+		"GetWorkDir":  GetWorkDir,
 	}
 
 	// render

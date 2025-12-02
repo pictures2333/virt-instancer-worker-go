@@ -39,6 +39,11 @@ var PortMax int
 // vmhelper - vnc
 var VNCListenHost string
 
+// VPN (wireguard)
+var WireguardAddress string // as "base network"
+var WireguardHost string    // for clients to connect
+var VPNMGRListenHost string // for vpn manager "http" server
+
 func loadenv() {
 	var err error
 
@@ -87,4 +92,8 @@ func Init() {
 	}
 
 	VNCListenHost = os.Getenv("VNC_LISTEN_HOST")
+
+	WireguardAddress = os.Getenv("WIREGUARD_ADDRESS")
+	WireguardHost = os.Getenv("WIREGUARD_HOST")
+	VPNMGRListenHost = os.Getenv("VPN_MGR_LISTEN_HOST")
 }

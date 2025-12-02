@@ -8,7 +8,7 @@ type Instance struct {
 
 	// from master
 	VMUUID string `gorm:"not null;unique"`
-	// ExpireTime
+	//VPNID  uint   // bind to a VPN client
 
 	// bridge network
 	NetworkUUID       string `gorm:"not null;unique"`
@@ -65,3 +65,14 @@ type Placeholder struct {
 	ID           uint `gorm:"primaryKey;not null;unique;autoIncrement"`
 	FilenameReal string
 }
+
+// VPN client
+
+//type VPNClient struct {
+//	ID         uint   `gorm:"primaryKey;not null;unique;autoIncrement"`
+//	UserID     uint   `gorm:"not null;unique;autoIncrement"` // from master
+//	AllowedIPs string `gorm:"not null;unique"`               // wireguard client ip
+//
+//	// OnDelete:RESTRICT -> Cannot delete a VPNClient which has Instances
+//	Instances []Instance `gorm:"foreignKey:VPNID;references:ID;constraint:OnDelete:RESTRICT"`
+//}

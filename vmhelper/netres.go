@@ -83,7 +83,7 @@ func GetSubnetAvaliable() (result *net.IPNet, err error) {
 
 	// find
 	for _, subnet := range allSubnets {
-		if !slices.Contains(*usedSubnets, subnet.String()) {
+		if !slices.Contains(*usedSubnets, subnet.IP.String()) {
 			return subnet, nil
 		}
 	}

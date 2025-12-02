@@ -29,6 +29,7 @@ func Init() {
 
 		// migrate
 		err = db.AutoMigrate(
+			//&VPNClient{},
 			&Instance{}, &Port{},
 			&FileLink{}, &FileObj{}, &Placeholder{},
 		)

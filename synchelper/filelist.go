@@ -11,8 +11,10 @@ import (
 // Get a list of files in MinIO from master
 func getFileListFromMaster() (result []schema.FileMINIO, err error) {
 	// request
+	var resp *http.Response
+
 	url := config.MasterUrl + "/server/internal/filelist"
-	resp, err := http.Get(url)
+	resp, err = http.Get(url)
 	if err != nil {
 		return nil, err
 	}

@@ -36,9 +36,11 @@ type Network struct {
 	VM VMNetwork `json:"vm"`
 }
 
+// request body from master
 type InstanceData struct {
 	// from master
 	VMUUID string `json:"vm_uuid"`
+	UserID uint   `json:"user_id"`
 
 	// from config
 	Config ChallengeConfig `json:"config"`

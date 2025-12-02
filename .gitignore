@@ -1,7 +1,9 @@
 build/
 tmp/
 challenge/
+wireguard/
 
 database/database.db
 .env
 note.md
+nftables.txt
